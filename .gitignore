@@ -1,0 +1,40 @@
+# === Secrets & credentials — NEVER COMMIT ===
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.keystore
+id_rsa
+id_rsa.*
+*_rsa
+credentials.json
+secrets.json
+serviceAccount*.json
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# === Jupyter ===
+.ipynb_checkpoints/
+
+# === OS / editor cruft ===
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
