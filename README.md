@@ -1,128 +1,88 @@
 # Project 10 — Monte Carlo Portfolio Optimisation
 
-University assignment (25% of total grade). One Jupyter notebook that builds the efficient frontier of 15 diversified large-cap US equities using:
+A single Jupyter notebook that builds the efficient frontier for a basket of 15 large-cap
+US equities (AAPL, MSFT, NVDA, JPM, BAC, GS, JNJ, PFE, UNH, PG, KO, WMT, XOM, CAT, VZ)
+using daily prices from 2014 to 2024. We find the frontier two ways, first by simulating
+50,000 random portfolios with NumPy, then by solving for the minimum-variance and
+maximum-Sharpe portfolios directly with SciPy's SLSQP optimiser, and check that the two
+agree. Along the way we compare both against a naive equal-weight portfolio, add a
+risk-free asset to get the Capital Market Line, and look at a rolling one-year Sharpe
+ratio to see how each portfolio held up through COVID and the 2022 rate cycle.
 
-1. **Monte Carlo** — 50,000 random portfolios, vectorised with NumPy.
-2. **SciPy SLSQP** — gradient-based min-variance and max-Sharpe optimisation.
-3. **Equal-weight (1/N)** — naive benchmark for comparison.
-4. **Capital Market Line** — what happens when a risk-free asset is added.
-5. **Rolling 1-year Sharpe** — stability check across COVID and the 2022 rate cycle.
+This was written as a university assignment, but it should be readable on its own.
 
----
+## Quick start
 
-## Prerequisites
+You need Python 3.10 or newer. From the repository root:
 
-You need **Python 3.10+** on PATH. Check with:
-
-```powershell
-python --version
-```
-
-If `python` is not found:
-
-```powershell
-winget install Python.Python.3.13
-```
-
-…then restart your terminal.
-
----
-
-## How to launch (pick one path)
-
-### Path A — VS Code (recommended)
-
-1. Install the VS Code **Python** and **Jupyter** extensions.
-2. Open this folder in VS Code: `File → Open Folder…` → pick `portfolio_optimisation`.
-3. Open a terminal in VS Code (`` Ctrl+` ``) and install dependencies:
-   ```powershell
-   pip install -r requirements.txt
-   ```
-4. Click `portfolio_optimisation.ipynb` in the file tree.
-5. Top-right of the notebook → **Select Kernel** → choose your Python 3.
-6. Click **Run All** (▶▶ button at the top of the notebook).
-
-Plots render inline below each code cell. Total runtime ≈ 30–60 seconds (the `yfinance` download is the slowest step).
-
-### Path B — Terminal only (headless execution)
-
-Run all cells without opening any UI; the executed notebook with all outputs is written back to the same file:
-
-```powershell
-pip install -r requirements.txt
-python -m nbconvert --to notebook --execute portfolio_optimisation.ipynb --inplace
-```
-
-Then open `portfolio_optimisation.ipynb` in any notebook viewer (VS Code, JupyterLab, or even GitHub) to read it.
-
-### Path C — JupyterLab in browser
-
-```powershell
+```bash
 pip install -r requirements.txt
 pip install jupyterlab
 jupyter lab portfolio_optimisation.ipynb
 ```
 
----
+JupyterLab itself isn't in `requirements.txt` (see Troubleshooting for why we keep that
+file slim), hence the extra line. Once the notebook is open, run all cells. A full run
+takes 30 to 60 seconds, most of it waiting on the `yfinance` download.
 
-## What gets installed
+If you'd rather use VS Code, install the Python and Jupyter extensions, open the folder,
+open the notebook, pick your Python 3 kernel and hit Run All. To execute everything
+without opening any UI, run
+`python -m nbconvert --to notebook --execute portfolio_optimisation.ipynb --inplace`,
+which writes the outputs back into the notebook file.
 
-`requirements.txt` pins these:
+## What's in the repo
 
-| Package | Why |
-|---|---|
-| `yfinance` | Fetches 11 years of daily prices from Yahoo Finance |
-| `pandas`, `numpy` | Data wrangling and vectorised math |
-| `scipy` | SLSQP optimiser (`scipy.optimize.minimize`) |
-| `matplotlib`, `seaborn` | All plots and the correlation heatmap |
-| `nbformat`, `nbconvert`, `ipykernel` | Notebook execution and editing |
+- `portfolio_optimisation.ipynb` is the whole project: narrative, code and plots in one file.
+- `requirements.txt` lists the dependencies. Prices come from Yahoo Finance via
+  `yfinance`; pandas, NumPy and SciPy do the maths; matplotlib and seaborn do the plots;
+  `nbformat`, `nbconvert` and `ipykernel` are there so the notebook can be executed
+  from the command line.
+- `figures/` holds a PNG of every plot. They're rewritten each time the notebook runs,
+  which is handy if you want to drop them into a written report.
 
-One-line install (no requirements file):
+## What the notebook covers
 
-```powershell
-pip install yfinance pandas numpy scipy matplotlib seaborn nbformat nbconvert ipykernel
-```
+The notebook starts with a short recap of mean-variance theory and the definitions it
+uses (annualised return, volatility, Sharpe ratio with a 2% risk-free rate). It then
+downloads adjusted closes for the 15 tickers, computes log returns, the annualised mean
+and covariance, and a correlation heatmap, and sets up the equal-weight baseline.
 
----
+The Monte Carlo section draws 50,000 weight vectors from a flat Dirichlet distribution so
+they cover the simplex uniformly, and computes every portfolio's return and volatility in
+a couple of vectorised operations. The scatter of those portfolios is the empirical
+frontier; we then trace the exact frontier with 200 constrained SLSQP solves and overlay
+it, and solve for the min-variance and max-Sharpe portfolios directly.
 
-## Files
+After that we put the Monte Carlo winners, the SLSQP optima and the equal-weight
+portfolio side by side, plot their weights and sector mixes, add a risk-free asset to
+derive the Capital Market Line, and finish with a 252-day rolling Sharpe ratio for each.
 
-| File | Purpose |
-|---|---|
-| `portfolio_optimisation.ipynb` | The deliverable — 31 cells, narrative + code + 7 plots |
-| `requirements.txt` | Pinned dependencies |
-| `figures/` | PNG copies of every plot (auto-saved during notebook run, useful for embedding in a written report) |
-| `README.md` | This file |
-
----
-
-## Notebook outline
-
-| § | Section | Type |
-|---|---|---|
-| 1 | Introduction & methodology | markdown |
-| 2 | Data acquisition (15 tickers, 2014–2024) | markdown + code |
-| 3 | Returns, statistics, equal-weight baseline, correlation heatmap | code |
-| 4 | Monte Carlo — 50,000 random portfolios | code |
-| 5 | Efficient frontier — MC scatter, with **5b**: SLSQP-traced curve overlay | code |
-| 6 | Gradient-based optimisation (SLSQP min-var + max-Sharpe) | code |
-| 7 | Portfolio comparison table (5 portfolios) | code |
-| 8 | Weight allocations (bar charts) + sector mix (pie charts) | code |
-| 9 | Capital Market Line | code |
-| 10 | Rolling 1-year Sharpe (stability check) | code |
-| 11 | Conclusion | markdown |
-
----
+The main takeaways, in the notebook's own words: the minimum-variance portfolio leans on
+consumer staples and healthcare (PG, JNJ, KO, WMT), the maximum-Sharpe portfolio
+concentrates in NVDA, MSFT, UNH and WMT, SLSQP beats the Monte Carlo envelope by only a
+few basis points, equal weighting gets you surprisingly close to either optimum, and the
+2022 rate cycle is where the max-Sharpe portfolio suffers most while min-variance stays
+the steadiest.
 
 ## Reproducibility
 
-`np.random.seed(42)` is set at the top of the imports cell, so every run produces identical numbers. Re-running on a different day will redownload the same fixed window (2014-01-01 → 2024-12-31).
-
----
+`np.random.seed(42)` is set in the imports cell, so the random portfolios are identical
+from run to run, and the download window is fixed to 2014-01-01 to 2024-12-31, so
+rerunning on a later date fetches the same data.
 
 ## Troubleshooting
 
-- **`python: command not found`** — install Python (`winget install Python.Python.3.13`) and restart the terminal.
-- **`pip install` errors about long paths on Windows** — that's the `jupyter` meta-package failing on a deeply-nested static asset. Don't install plain `jupyter`; the packages in `requirements.txt` are the slim subset that works fine, and VS Code provides the UI.
-- **`yfinance` returns empty data** — Yahoo occasionally rate-limits; rerun the download cell after a minute.
-- **Notebook says "kernel not found"** in VS Code — click the kernel picker in the top right, then "Select Another Kernel" → "Python Environments" → your Python 3.x install.
+If `python` isn't found on Windows, `winget install Python.Python.3.13` and reopen the
+terminal. On macOS or Linux use your package manager or python.org.
+
+If `pip install` fails with a long-path error on Windows, that's the `jupyter`
+meta-package tripping over a deeply nested static asset. Don't install plain `jupyter`;
+`requirements.txt` is the slim subset that works, and either JupyterLab or VS Code
+provides the UI.
+
+If `yfinance` comes back empty, Yahoo is probably rate-limiting you. Wait a minute and
+rerun the download cell.
+
+If VS Code says the kernel wasn't found, open the kernel picker in the top right, choose
+"Select Another Kernel", then "Python Environments", then your Python 3 install.
