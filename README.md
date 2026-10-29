@@ -1,4 +1,4 @@
-# Project 10 — Monte Carlo Portfolio Optimisation
+# Monte Carlo Portfolio Optimisation
 
 A single Jupyter notebook that builds the efficient frontier for a basket of 15 large-cap
 US equities (AAPL, MSFT, NVDA, JPM, BAC, GS, JNJ, PFE, UNH, PG, KO, WMT, XOM, CAT, VZ)
@@ -10,6 +10,23 @@ risk-free asset to get the Capital Market Line, and look at a rolling one-year S
 ratio to see how each portfolio held up through COVID and the 2022 rate cycle.
 
 This was written as a university assignment, but it should be readable on its own.
+
+## Results
+
+Annualised, 2014–2024, 2% risk-free rate:
+
+| Portfolio | Return | Volatility | Sharpe |
+|---|---|---|---|
+| Equal weight (1/N) | 14.9% | 16.7% | 0.77 |
+| Min-variance (Monte Carlo) | 9.1% | 13.9% | 0.51 |
+| Min-variance (SLSQP) | 7.9% | 13.6% | 0.43 |
+| Max-Sharpe (Monte Carlo) | 28.5% | 23.2% | 1.15 |
+| Max-Sharpe (SLSQP) | 32.7% | 25.6% | 1.20 |
+
+![Monte Carlo cloud vs. SLSQP optima](figures/mc_vs_scipy.png)
+
+These are in-sample numbers: the max-Sharpe weights are chosen with hindsight over the same
+period they are scored on, which is why NVDA dominates. They describe the past, not a strategy.
 
 ## Quick start
 
@@ -60,10 +77,11 @@ After that we put the Monte Carlo winners, the SLSQP optima and the equal-weight
 portfolio side by side, plot their weights and sector mixes, add a risk-free asset to
 derive the Capital Market Line, and finish with a 252-day rolling Sharpe ratio for each.
 
-The main takeaways: the minimum-variance portfolio leans on consumer staples and
-healthcare (PG, JNJ, KO, WMT), the maximum-Sharpe portfolio concentrates in NVDA, MSFT,
-UNH and WMT, SLSQP beats the Monte Carlo envelope by only a few basis points, equal
-weighting lands surprisingly close to the optimised portfolios, and the 2022 rate cycle
+The main takeaways: the minimum-variance portfolio leans on telecoms, consumer staples and
+healthcare (VZ, JNJ, WMT, KO, PG), the maximum-Sharpe portfolio concentrates in NVDA, UNH,
+WMT and AAPL, SLSQP improves on the best of 50,000 random portfolios (Sharpe 1.20 vs 1.15,
+and slightly lower minimum volatility), equal weighting beats the minimum-variance
+portfolio on risk-adjusted return (Sharpe 0.77 vs 0.43), and the 2022 rate cycle
 is where the max-Sharpe portfolio suffers most while min-variance stays the steadiest.
 
 ## Reproducibility
